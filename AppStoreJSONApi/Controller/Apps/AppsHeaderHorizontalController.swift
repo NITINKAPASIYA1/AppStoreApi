@@ -14,7 +14,8 @@ class AppsHeaderHorizontalController: HorizontalSnappingController , UICollectio
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        collectionView.backgroundColor = .white
+        
+        collectionView.backgroundColor = UIColor.systemBackground
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.contentInset = .init(top: 0, left: 16, bottom: 0, right: 16)
         
@@ -42,8 +43,5 @@ class AppsHeaderHorizontalController: HorizontalSnappingController , UICollectio
         cell.imageView.sd_setImage(with: URL(string: socialApps[indexPath.item].imageUrl))
         return cell
     }
-    
-    
-    
     
 }

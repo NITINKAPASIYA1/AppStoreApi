@@ -9,31 +9,50 @@ import UIKit
 
 class TrackCell: UICollectionViewCell {
     
-    let imageView = UIImageView(cornerRadius: 16)
-    let nameLabel = UILabel(text: "Track Name", font: .boldSystemFont(ofSize: 20))
-    let subTitleLabel = UILabel(text: "Artist Name", font: .systemFont(ofSize: 16))
+    let imageView: UIImageView = {
+        let iv = UIImageView()
+        iv.layer.cornerRadius = 8  // More subtle rounded corners
+        iv.clipsToBounds = true
+        iv.contentMode = .scaleAspectFill
+        iv.constrainWidth(constant: 75)
+        iv.constrainHeight(constant: 75)
+        return iv
+    }()
     
-    // Thin separator line
+    let nameLabel: UILabel = {
+        let label = UILabel()
+        label.font = .boldSystemFont(ofSize: 18)
+        label.textColor = .label  // Adapts for Dark Mode
+        label.numberOfLines = 1
+        return label
+    }()
+    
+    let subTitleLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 14)
+        label.textColor = .secondaryLabel  // Softer text color
+        label.numberOfLines = 1
+        return label
+    }()
+    
     let separatorView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor.lightGray.withAlphaComponent(0.4)
+        view.backgroundColor = UIColor.separator
         return view
     }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         
-        imageView.image = #imageLiteral(resourceName: "garden")
-        imageView.constrainWidth(constant: 60)
-        imageView.constrainHeight(constant: 60)
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
+        backgroundColor = .clear  // Matches Apple's UI style
         
-        let textStackView = VerticalStackView(arrangedSubviews: [nameLabel, subTitleLabel], spacing: 2)
+        let textStackView = UIStackView(arrangedSubviews: [nameLabel, subTitleLabel])
+        textStackView.axis = .vertical
+        textStackView.spacing = 4
         
         let horizontalStackView = UIStackView(arrangedSubviews: [imageView, textStackView])
         horizontalStackView.axis = .horizontal
-        horizontalStackView.spacing = 16
+        horizontalStackView.spacing = 12
         horizontalStackView.alignment = .center
         
         addSubview(horizontalStackView)
@@ -41,7 +60,7 @@ class TrackCell: UICollectionViewCell {
         
         horizontalStackView.anchor(top: topAnchor, leading: leadingAnchor, bottom: nil, trailing: trailingAnchor, padding: .init(top: 12, left: 16, bottom: 0, right: 16))
         
-        separatorView.anchor(top: horizontalStackView.bottomAnchor, leading: textStackView.leadingAnchor, bottom: bottomAnchor, trailing: trailingAnchor ,padding: .init(top: 0, left: 0, bottom: 0, right: 20), size: .init(width: 0, height: 1))
+        separatorView.anchor(top: horizontalStackView.bottomAnchor, leading: textStackView.leadingAnchor, bottom: bottomAnchor, trailing: trailingAnchor, padding: .init(top: 12, left: 0, bottom: 0, right: 20), size: .init(width: 0, height: 0.5))
     }
     
     required init?(coder: NSCoder) {

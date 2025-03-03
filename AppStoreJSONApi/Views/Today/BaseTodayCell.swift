@@ -1,38 +1,35 @@
-//
-//  BaseTodayCell.swift
-//  AppStoreJSONApi
-//
-//  Created by Nitin on 24/02/25.
-//
-
 import UIKit
 
 class BaseTodayCell: UICollectionViewCell {
     
-    var todayItem : TodayItem!
+    var todayItem: TodayItem!
     
-    override var isHighlighted: Bool{
-        
-        didSet{
-            var transfrom : CGAffineTransform = .identity
+    override var isHighlighted: Bool {
+        didSet {
+            var transform: CGAffineTransform = .identity
             if isHighlighted {
-                transfrom = .init(scaleX: 0.9, y: 0.9)
+                transform = .init(scaleX: 0.9, y: 0.9)
             }
-            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1,options: .curveEaseOut, animations:{
-                
-                self.transform = transfrom
+            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+                self.transform = transform
             })
         }
-        
     }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        setupBackgroundView()
+    }
+    
+    private func setupBackgroundView() {
         self.backgroundView = UIView()
         
         addSubview(self.backgroundView!)
         self.backgroundView?.fillSuperview()
-        self.backgroundView?.backgroundColor = .white
+        
+        // Use systemBackground instead of hardcoded white
+        self.backgroundView?.backgroundColor = .systemBackground
+        
         self.backgroundView?.layer.cornerRadius = 16
         
         self.backgroundView?.layer.shadowOpacity = 0.1
@@ -41,11 +38,20 @@ class BaseTodayCell: UICollectionViewCell {
         self.backgroundView?.layer.shouldRasterize = true
     }
     
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            updateForDarkMode()
+        }
+    }
     
+    private func updateForDarkMode() {
+        // Update background color based on current trait collection
+        self.backgroundView?.backgroundColor = .systemBackground
+    }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-
 }

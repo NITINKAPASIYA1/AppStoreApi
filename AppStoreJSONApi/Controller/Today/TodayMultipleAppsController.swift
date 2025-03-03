@@ -13,7 +13,6 @@ class TodayMultipleAppsController: BaseListController, UICollectionViewDelegateF
     
     var apps = [FeedResult]()
     
-    // Add this property to handle the dismiss callback
     var dismissHandler: (() -> ())?
     
     let closeButton: UIButton = {
@@ -25,11 +24,9 @@ class TodayMultipleAppsController: BaseListController, UICollectionViewDelegateF
         return button
     }()
     
-    // Update the dismiss method to call the dismissHandler
     @objc fileprivate func handleDismiss(button: UIButton) {
         button.isHidden = true
         dismiss(animated: true) {
-            // Call the dismissHandler when dismissal is complete
             self.dismissHandler?()
         }
     }
@@ -39,21 +36,37 @@ class TodayMultipleAppsController: BaseListController, UICollectionViewDelegateF
         navigationController?.pushViewController(appController, animated: true)
     }
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         if mode == .fullScreen {
             setupCloseButton()
             navigationController?.isNavigationBarHidden = true
-        }
-        else {
+        } else {
             collectionView.isScrollEnabled = false
         }
         
-        collectionView.backgroundColor = .white
+        configureForCurrentTraitCollection()
         
         collectionView.register(MultipleAppCell.self, forCellWithReuseIdentifier: cellId)
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            configureForCurrentTraitCollection()
+        }
+    }
+    
+    private func configureForCurrentTraitCollection() {
+        if traitCollection.userInterfaceStyle == .dark {
+            collectionView.backgroundColor = .black
+            closeButton.tintColor = .white
+        } else {
+            collectionView.backgroundColor = .white
+            closeButton.tintColor = .systemBlue
+        }
     }
     
     override var prefersStatusBarHidden: Bool {

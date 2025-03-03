@@ -31,6 +31,7 @@ class AppsPageController : BaseListController ,UICollectionViewDelegateFlowLayou
         edgesForExtendedLayout = []
         extendedLayoutIncludesOpaqueBars = false
         
+        collectionView.backgroundColor = UIColor.systemBackground
         collectionView.register(AppsGroupCell.self,forCellWithReuseIdentifier: cellId)
         //No : 1
         collectionView.register(AppsPageHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: headerId)

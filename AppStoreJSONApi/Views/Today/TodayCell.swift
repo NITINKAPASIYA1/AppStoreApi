@@ -18,27 +18,56 @@ class TodayCell: BaseTodayCell {
             
             backgroundColor = todayItem.backgroundColor
             backgroundView?.backgroundColor = todayItem.backgroundColor
+            
+            // Ensure titleLabel remains black for holiday and Life hack  cells thik h
+            if todayItem.category == "HOLIDAYS" || todayItem.category == "LIFE HACK" {
+                titleLabel.textColor = .black
+                categoryLabel.textColor = .black
+                descriptionLabel.textColor = .black
+            } else {
+                titleLabel.textColor = .label  // Adapts to light/dark mode
+                categoryLabel.textColor = .label
+                descriptionLabel.textColor = .secondaryLabel
+            }
         }
     }
     
-    let categoryLabel = UILabel(text: "LIFE HACK", font: .boldSystemFont(ofSize: 20))
-    let titleLabel = UILabel(text: "Utilizing your Time", font: .boldSystemFont(ofSize: 28))
+    let categoryLabel: UILabel = {
+        let label = UILabel()
+        label.font = .boldSystemFont(ofSize: 20)
+        label.textColor = UIColor.label // Adapts to light/dark mode
+        return label
+    }()
     
-    let imageView = UIImageView(image: #imageLiteral(resourceName: "garden"))
+    let titleLabel: UILabel = {
+        let label = UILabel()
+        label.font = .boldSystemFont(ofSize: 28)
+        label.textColor = UIColor.label
+        return label
+    }()
     
-    let descriptionLabel = UILabel(text: "All the tools and apps you need to intelligently organize your life the right way.", font: .systemFont(ofSize: 16), numberOfLines: 3)
+    let imageView: UIImageView = {
+        let iv = UIImageView(image: UIImage(named: "garden"))
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
+        return iv
+    }()
+    
+    let descriptionLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 16)
+        label.numberOfLines = 3
+        label.textColor = UIColor.secondaryLabel
+        return label
+    }()
     
     var topConstraint: NSLayoutConstraint!
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         
-        backgroundColor = .white
-//        clipsToBounds = true
+        backgroundColor = UIColor.systemBackground // Adapts to light/dark mode
         layer.cornerRadius = 16
-        
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
         
         let imageContainerView = UIView()
         imageContainerView.addSubview(imageView)
@@ -51,11 +80,9 @@ class TodayCell: BaseTodayCell {
         stackView.anchor(top: nil, leading: leadingAnchor, bottom: bottomAnchor, trailing: trailingAnchor, padding: .init(top: 0, left: 24, bottom: 24, right: 24))
         self.topConstraint = stackView.topAnchor.constraint(equalTo: topAnchor, constant: 24)
         self.topConstraint.isActive = true
-        
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError()
     }
-    
 }

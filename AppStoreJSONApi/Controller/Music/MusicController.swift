@@ -21,7 +21,7 @@ class MusicController: BaseListController, UICollectionViewDelegateFlowLayout {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        collectionView.backgroundColor = .white
+        collectionView.backgroundColor = UIColor.systemBackground
         collectionView.register(TrackCell.self, forCellWithReuseIdentifier: cellId)
         collectionView.register(LoadingFooter.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: footId)
         
@@ -91,6 +91,9 @@ class MusicController: BaseListController, UICollectionViewDelegateFlowLayout {
         cell.nameLabel.text = music.primaryGenreName
         cell.subTitleLabel.text = music.trackName
         cell.imageView.sd_setImage(with: URL(string: music.artworkUrl100))
+        
+        cell.nameLabel.textColor = UIColor.label
+        cell.subTitleLabel.textColor = UIColor.secondaryLabel
         
         return cell
     }

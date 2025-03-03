@@ -19,7 +19,6 @@ class PreviewCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        backgroundColor = .secondarySystemBackground
         
         contentView.addSubview(previewLabel)
         contentView.addSubview(horizontalController.view)

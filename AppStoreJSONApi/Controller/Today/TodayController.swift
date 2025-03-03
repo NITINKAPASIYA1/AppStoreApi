@@ -13,7 +13,7 @@ class TodayController: BaseListController, UICollectionViewDelegateFlowLayout, U
     
     var activityIndicatorView: UIActivityIndicatorView = {
         let aiv = UIActivityIndicatorView(style: .large)
-        aiv.color = .darkGray
+        aiv.color = .label 
         aiv.startAnimating()
         aiv.hidesWhenStopped = true
         return aiv
@@ -21,19 +21,38 @@ class TodayController: BaseListController, UICollectionViewDelegateFlowLayout, U
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
         tabBarController?.tabBar.superview?.setNeedsLayout()
+        updateAppearanceForCurrentTraitCollection()
     }
     
-    let blurEffectView: UIVisualEffectView = {
-        let blurEffect = UIBlurEffect(style: .regular)
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            updateAppearanceForCurrentTraitCollection()
+        }
+    }
+    
+    private func updateAppearanceForCurrentTraitCollection() {
+        // Update UI elements based on current mode
+        collectionView.backgroundColor = traitCollection.userInterfaceStyle == .dark ?
+        UIColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1.0) :
+        #colorLiteral(red: 0.948936522, green: 0.9490727782, blue: 0.9489068389, alpha: 1)
+        
+        // Refresh cells to update their appearance
+        collectionView.reloadData()
+    }
+    
+    var blurEffectView: UIVisualEffectView = {
+        // Use .systemMaterial which adapts to dark/light mode
+        let blurEffect = UIBlurEffect(style: .systemMaterial)
         let blurEffectView = UIVisualEffectView(effect: blurEffect)
         return blurEffectView
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        setupDarkModeAppearance()
         view.addSubview(blurEffectView)
         blurEffectView.fillSuperview()
         blurEffectView.alpha = 0
@@ -43,7 +62,7 @@ class TodayController: BaseListController, UICollectionViewDelegateFlowLayout, U
         
         navigationController?.isNavigationBarHidden = true
         
-        collectionView.backgroundColor = #colorLiteral(red: 0.948936522, green: 0.9490727782, blue: 0.9489068389, alpha: 1)
+        // Initial background color setup will be handled by updateAppearanceForCurrentTraitCollection
         
         collectionView.register(TodayCell.self, forCellWithReuseIdentifier: TodayItem.CellType.single.rawValue)
         collectionView.register(TodayMultipleAppCell.self, forCellWithReuseIdentifier: TodayItem.CellType.multiple.rawValue)
@@ -51,16 +70,14 @@ class TodayController: BaseListController, UICollectionViewDelegateFlowLayout, U
         fetchData()
     }
     
-
     fileprivate func fetchData() {
         let dispatchGroup = DispatchGroup()
         
-        var topPaidApps : AppGroup?
-        var topFreeApps : AppGroup?
+        var topPaidApps: AppGroup?
+        var topFreeApps: AppGroup?
         
         dispatchGroup.enter()
         Service.shared.fetchAppFeed(feedType: "top-free") { (appGroup, err) in
-            //check
             topFreeApps = appGroup
             dispatchGroup.leave()
         }
@@ -80,36 +97,35 @@ class TodayController: BaseListController, UICollectionViewDelegateFlowLayout, U
             
             self?.items = [
                 
-                
-                
                 TodayItem(category: "LIFE HACK",
                           title: "Utilizing your Time",
                           image: #imageLiteral(resourceName: "garden"),
                           description: "All the tools and apps you need to intelligently organize your life the right way.",
-                          backgroundColor: .white,
+                          backgroundColor: UIColor.white, // for dark mode
                           cellType: .single, apps: []),
                 
                 TodayItem(category: "Daily List",
                           title: topPaidApps?.feed.title ?? "",
                           image: #imageLiteral(resourceName: "garden"),
                           description: "",
-                          backgroundColor: .white,
+                          backgroundColor: .systemBackground, // for dark mode
                           cellType: .multiple, apps: topPaidApps?.feed.results ?? []),
+                
+                TodayItem(category: "HOLIDAYS",
+                          title: "Travel on a Budget",
+                          image: #imageLiteral(resourceName: "holiday"),
+                          description: "All the tools and apps you need to intelligently organize your life the right way.",
+                          //                          backgroundColor: .systemYellow,
+                          backgroundColor: UIColor(resource: .yellow),
+                          cellType: .single,
+                          apps: []),
                 
                 TodayItem(category: "Daily List",
                           title: topFreeApps?.feed.title ?? "",
                           image: #imageLiteral(resourceName: "garden"),
                           description: "",
-                          backgroundColor: .white,
+                          backgroundColor: .systemBackground, // for dark mode
                           cellType: .multiple, apps: topFreeApps?.feed.results ?? []),
-                
-                TodayItem.init(category: "HOLIDAYS",
-                               title: "Travel on a Budget",
-                               image: #imageLiteral(resourceName: "holiday"),
-                               description: "All the tools and apps you need to intelligently organize your life the right way.",
-                               backgroundColor: #colorLiteral(red: 0.9838578105, green: 0.9588007331, blue: 0.7274674177, alpha: 1),
-                               cellType: .single,
-                               apps: []),
                 
                 
             ]
@@ -117,6 +133,7 @@ class TodayController: BaseListController, UICollectionViewDelegateFlowLayout, U
             self?.collectionView.reloadData()
         })
     }
+
     
     var appFullscreenController: AppFullscreenController!
     
@@ -125,19 +142,42 @@ class TodayController: BaseListController, UICollectionViewDelegateFlowLayout, U
     var widthConstraint: NSLayoutConstraint?
     var heightConstraint: NSLayoutConstraint?
     
+    
+    
+    fileprivate func setupDarkModeAppearance() {
+        // Set colors that respond to dark/light mode
+        collectionView.backgroundColor = .systemBackground
+        
+        // Configure blur effect view to work with dark mode
+        blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
+        blurEffectView.alpha = 0
+        view.addSubview(blurEffectView)
+        blurEffectView.fillSuperview()
+    }
+    
     fileprivate func showDailyListFullscreen(_ indexPath: IndexPath) {
         animateTabBarDown()
         let fullController = TodayMultipleAppsController(mode: .fullScreen)
         fullController.apps = self.items[indexPath.item].apps
         
-        // Create the navigation controller
         let navController = BackEnabledNavigationController(rootViewController: fullController)
         
-        // Set the modal presentation style on the navigation controller
+        
         navController.modalPresentationStyle = .fullScreen
         
         fullController.dismissHandler = {
-            self.animateTabBarUp()
+         
+            self.tabBarController?.tabBar.isHidden = false
+            
+            if let tabBar = self.tabBarController?.tabBar {
+                tabBar.frame.origin.y = self.view.frame.maxY
+            }
+            
+            UIView.animate(withDuration: 0.7, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.7, options: .curveEaseOut) {
+                if let tabBar = self.tabBarController?.tabBar {
+                    tabBar.frame.origin.y = self.view.frame.size.height - tabBar.frame.height
+                }
+            }
         }
         
         present(navController, animated: true)
@@ -163,16 +203,13 @@ class TodayController: BaseListController, UICollectionViewDelegateFlowLayout, U
         self.appFullscreenController = appFullscreenController
         appFullscreenController.view.layer.cornerRadius = 16
         
+        appFullscreenController.view.backgroundColor = .systemBackground
+        
         //#1 setup our pan gesture
         let gesture = UIPanGestureRecognizer(target: self, action: #selector(handleDrag))
         gesture.delegate = self
         
         appFullscreenController.view.addGestureRecognizer(gesture)
-        
-        //#2 add a blue effect view
-        
-        
-        //#3 not to interface with our UITableView Scrolling
     }
     
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
@@ -259,9 +296,10 @@ class TodayController: BaseListController, UICollectionViewDelegateFlowLayout, U
     }
     
     fileprivate func beginAnimationAppFullscreen() {
+        // Call this BEFORE the animation block
+        animateTabBarDown()
         
         UIView.animate(withDuration: 0.7, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.7, options: .curveEaseOut, animations: {
-            
             self.blurEffectView.alpha = 1
             
             self.topConstraint?.constant = 0
@@ -271,17 +309,14 @@ class TodayController: BaseListController, UICollectionViewDelegateFlowLayout, U
             
             self.view.layoutIfNeeded() // starts animation
             
-            // Animate the tab bar down
-            self.animateTabBarDown()
-            
             guard let cell = self.appFullscreenController.tableView.cellForRow(at: [0, 0]) as? AppFullscreenHeaderCell else { return }
             
             cell.todayCell.topConstraint.constant = 48
             cell.layoutIfNeeded()
-            
         }, completion: nil)
-        
     }
+    
+    
     
     fileprivate func showSingleAppFullscreen(indexPath: IndexPath) {
         // #1
@@ -296,33 +331,32 @@ class TodayController: BaseListController, UICollectionViewDelegateFlowLayout, U
     }
     
     
-    
     // Method to animate tab bar down (out of screen)
     fileprivate func animateTabBarDown() {
-        self.tabBarController?.tabBar.isHidden = false // Make sure it's visible before animation
+        // Make sure it's visible initially for the animation
+        self.tabBarController?.tabBar.isHidden = false
         
         UIView.animate(withDuration: 0.7, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.7, options: .curveEaseOut, animations: {
             // Move tab bar offscreen
-            self.tabBarController?.tabBar.frame.origin.y = self.view.frame.maxY + 100
-            
-            // Alternative with transform
-             self.tabBarController?.tabBar.transform = CGAffineTransform(translationX: 0, y: 100)
+            if let tabBar = self.tabBarController?.tabBar {
+                tabBar.frame.origin.y = self.view.frame.maxY
+            }
         }, completion: { _ in
-            // Hide tab bar after it's moved out
+            // Hide tab bar after animation completes
             self.tabBarController?.tabBar.isHidden = true
         })
     }
     
     // Method to animate tab bar up (back into screen)
     fileprivate func animateTabBarUp() {
-        self.tabBarController?.tabBar.isHidden = false // Make visible for animation
+        // Make visible for animation
+        self.tabBarController?.tabBar.isHidden = false
         
         UIView.animate(withDuration: 0.7, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.7, options: .curveEaseOut, animations: {
             // Reset position
-            if let tabBarFrame = self.tabBarController?.tabBar.frame {
-                self.tabBarController?.tabBar.frame.origin.y = self.view.frame.size.height - tabBarFrame.height
+            if let tabBar = self.tabBarController?.tabBar {
+                tabBar.frame.origin.y = self.view.frame.size.height - tabBar.frame.height
             }
-            
         })
     }
     
@@ -354,6 +388,7 @@ class TodayController: BaseListController, UICollectionViewDelegateFlowLayout, U
             cell.todayCell.topConstraint.constant = 24
             cell.layoutIfNeeded()
             
+            
         }, completion: { _ in
             self.appFullscreenController.view.removeFromSuperview()
             self.appFullscreenController.removeFromParent()
@@ -367,20 +402,36 @@ class TodayController: BaseListController, UICollectionViewDelegateFlowLayout, U
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
-        
         let cellType = items[indexPath.item].cellType.rawValue
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellType, for: indexPath) as! BaseTodayCell
+        
+        // Set the todayItem
         cell.todayItem = items[indexPath.item]
         
-        (cell as? TodayMultipleAppCell)?.multipleAppController.collectionView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleMultipleAppsTap)))
+        // Force dark mode adaptive colors
+        cell.backgroundColor = .systemBackground
+        
+        // Configure adaptive colors for all BaseTodayCell subviews
+        let labels = cell.contentView.subviews.compactMap { $0 as? UILabel }
+        for label in labels {
+            if label.tag == 100 { // If you have a tag for category labels
+                label.textColor = .secondaryLabel
+            } else {
+                label.textColor = .label
+            }
+        }
+        
+        // Add tap gesture for multiple app cells
+        if let multipleAppCell = cell as? TodayMultipleAppCell {
+            multipleAppCell.multipleAppController.collectionView.addGestureRecognizer(
+                UITapGestureRecognizer(target: self, action: #selector(handleMultipleAppsTap))
+            )
+        }
         
         return cell
-        
     }
     
     @objc fileprivate func handleMultipleAppsTap(gesture: UITapGestureRecognizer) {
-        
         let collectionView = gesture.view
         
         // figure out which cell we are clicking into
@@ -390,17 +441,12 @@ class TodayController: BaseListController, UICollectionViewDelegateFlowLayout, U
             if let cell = superview as? TodayMultipleAppCell {
                 guard let indexPath = self.collectionView.indexPath(for: cell) else { return }
                 
-                let apps = self.items[indexPath.item].apps
-                
-                let fullController = TodayMultipleAppsController(mode: .fullScreen)
-                fullController.modalPresentationStyle = .fullScreen
-                fullController.apps = apps
-                present(fullController, animated: true)
+                // Use the same method as when tapping the whole cell
+                showDailyListFullscreen(indexPath)
                 return
             }
             superview = superview?.superview
         }
-
     }
 
     

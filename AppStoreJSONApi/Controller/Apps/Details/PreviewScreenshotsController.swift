@@ -5,30 +5,33 @@
 //  Created by Nitin on 21/02/25.
 //
 
-
 import UIKit
+import SDWebImage
 
-
-class PreviewScreenshotsController: HorizontalSnappingController , UICollectionViewDelegateFlowLayout{
+class PreviewScreenshotsController: HorizontalSnappingController, UICollectionViewDelegateFlowLayout {
     
     let cellId = "cellId"
     
-    var app : Result? {
-        didSet{
+    var app: Result? {
+        didSet {
             collectionView.reloadData()
         }
     }
     
-    class ScreenshotCell : UICollectionViewCell {
+    class ScreenshotCell: UICollectionViewCell {
         
-        let imageView = UIImageView(cornerRadius:12)
+        let imageView: UIImageView = {
+            let iv = UIImageView()
+            iv.layer.cornerRadius = 12
+            iv.clipsToBounds = true
+            iv.contentMode = .scaleAspectFill
+            return iv
+        }()
         
         override init(frame: CGRect) {
             super.init(frame: frame)
-            imageView.backgroundColor = .purple
             addSubview(imageView)
             imageView.fillSuperview()
-            
         }
         
         required init?(coder: NSCoder) {
@@ -40,7 +43,7 @@ class PreviewScreenshotsController: HorizontalSnappingController , UICollectionV
         super.viewDidLoad()
         
         collectionView.register(ScreenshotCell.self, forCellWithReuseIdentifier: cellId)
-        collectionView.backgroundColor = .white
+        collectionView.backgroundColor = UIColor.systemBackground
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.contentInset = .init(top: 0, left: 16, bottom: 0, right: 16)
     }
@@ -52,18 +55,14 @@ class PreviewScreenshotsController: HorizontalSnappingController , UICollectionV
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! ScreenshotCell
         
-        let screenshotUrl = self.app?.screenshotUrls[indexPath.item]
-        cell.imageView.sd_setImage(with:URL(string: screenshotUrl ?? ""))
+        if let screenshotUrl = app?.screenshotUrls[indexPath.item] {
+            cell.imageView.sd_setImage(with: URL(string: screenshotUrl))
+        }
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return .init(width: 250, height: view.frame.height)
     }
-    
-    
 }
 
-#Preview{
-    PreviewScreenshotsController()
-}
